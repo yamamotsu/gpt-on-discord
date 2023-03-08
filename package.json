@@ -1,0 +1,14 @@
+{
+  "name": "DiscordBot",
+  "version": "1.0.0",
+  "description": "ChatGPT on your discord server",
+  "main": "index.js",
+  "author": "yamamotsu",
+  "license": "MIT",
+  "private": false,
+  "dependencies": {
+    "discord.js": "^14.7.1",
+    "dotenv": "^16.0.3",
+    "openai": "^3.2.1"
+  }
+}
