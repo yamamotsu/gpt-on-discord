@@ -1,6 +1,7 @@
-# ChatGPT Discord Bot
+# gpt-on-discord
 
-ChatGPT-Bot is a discord bot that uses OpenAI's GPT-3 API to generate natural language responses to user input.
+Simple discord bot that uses OpenAI's GPT-3 API to generate natural language responses to user input.
+Created for my practice of Discord Bot / ChatGPT.
 
 ## Getting Started
 
@@ -26,9 +27,9 @@ Before starting your bot, you need to get OpenAI API key and Discord Bot token.
 
 ### Clone and setup
 
-Clone repo:
+Clone this repo:
 
-`git clone https://github.com/yamamotsu/gpt_on_discord.git`
+`git clone https://github.com/yamamotsu/gpt-on-discord.git`
 
 Copy `.env.sample` to `.env` and modify it for your environment.
 
@@ -61,6 +62,8 @@ yarn start
 
 ## Usage
 
+### `/gpt` command: ask ChatGPT something
+
 You can use `/gpt` command for asking any questions to ChatGPT
 
 ```command
@@ -76,6 +79,15 @@ Players can work together in multiplayer mode or compete against each other in p
 
 As of May 2021, Minecraft has sold over 200 million copies across all platforms,
 making it one of the best-selling video games of all time. 😲🎮
+```
+
+### `/gpt-clear` command: clears current context
+
+`/gpt-clear` command can remove current context.
+
+```command
+/gpt-clear
+---記憶リセット---
 ```
 
 ### Notes
