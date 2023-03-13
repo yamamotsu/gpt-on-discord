@@ -18,14 +18,15 @@ const configuration = new Configuration({
 });
 const openai = new OpenAIApi(configuration);
 
+const MODEL_NAME: string = process.env.MODEL_NAME || "gpt-3.5-turbo";
+
 const instructionTexts: string[] = [
-  "あなたはDiscordチャット内で応答する、フレンドリーで優秀なアシスタントです。Unicode Emojiをたくさん使用して回答してください。句読点もなるべく多く使用してください。",
-  "質問者の名前は、質問文のはじめに付与されています。例えば、山田さんがあなたに質問するときは、「[山田] スペースシャトルとは何でしょうか？」のような形式で質問が届きます。あなたは質問者の名前を添えて回答してください。",
+  "あなたはDiscordチャット内で応答する、フレンドリーで優秀なアシスタントです。Unicode Emojiをたくさん使用して回答してください。句読点もなるべく多く使用してください。質問者の名前は、質問文のはじめに付与されています。例えば、Yamadaさんがあなたに質問するときは、「@Yamada スペースシャトルとは何でしょうか？」のような形式で質問が届きます。あなたは質問者の名前を添えて回答してください。",
 ];
 const exampleConversations: string[][] = [
   [
-    "[山田] こんにちは。元気ですか？",
-    "山田ﾁｬﾝ！✋😁元気カナ？？？おじさんは最近腰がいたいョ。。。😅 山田ﾁｬﾝも、無理しないようにﾈ！👍何かできることあったら言ってﾈ！😊",
+    "@Yamada こんにちは。元気ですか？",
+    "Yamadaﾁｬﾝ！✋😁元気カナ？？？おじさんは最近腰がいたいョ。。。😅 Yamadaﾁｬﾝも、無理しないようにﾈ！👍何かできることあったら言ってﾈ！😊",
   ],
 ];
 const instructionMessages: ChatCompletionRequestMessage[] =
@@ -103,8 +104,9 @@ client.on("interactionCreate", async (interaction) => {
   // gptコマンドが呼び出された場合、OpenAIに質問を送信する
   if (command === "gpt") {
     // 質問を取得する
-    const question = interaction.options.get("質問")?.value;
-    console.log(`${channelId}: <${userId}> ${question}`); // 質問がコンソールに出力される
+    const questionRaw = interaction.options.get("質問")?.value;
+    const question = `@${username} ${questionRaw}`;
+    console.log(`<${channelId}> ${userId}@${username}:${question}`); // 質問がコンソールに出力される
 
     // interactionの返信を遅延する
     await interaction.deferReply();
@@ -120,12 +122,12 @@ client.on("interactionCreate", async (interaction) => {
           ...historyMessages,
           {
             role: "user",
-            content: `[${username}] ${question}`,
+            content: question,
           },
         ];
         console.log("message to be completed:", contextMessages);
         const completion = await openai.createChatCompletion({
-          model: "gpt-3.5-turbo",
+          model: MODEL_NAME,
           messages: [
             ...instructionMessages,
             ...exampleMessages,
@@ -139,10 +141,12 @@ client.on("interactionCreate", async (interaction) => {
         store.dispatch(
           push({
             channelId,
-            interaction: { user: userId, question: `${question}`, response },
+            interaction: { user: userId, question, response },
           })
         );
-        await interaction.editReply(`${question}\n>> ${response}\r\n`);
+        await interaction.editReply(
+          `> ${questionRaw}\n>> @${username} ${response}\r\n`
+        );
       } catch (error: any) {
         console.error(error);
         await interaction.editReply(`エラーが発生しました: ${error.message}`);
