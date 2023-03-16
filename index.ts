@@ -1,10 +1,10 @@
-import { Client } from "discord.js";
+import { Client, CommandInteraction } from "discord.js";
 import { ChatCompletionRequestMessage, Configuration, OpenAIApi } from "openai";
 // dotenvを使って、環境変数を読み込む
 import dotenv from "dotenv";
 dotenv.config();
 
-import { QuestionAndResponse } from "./src/types";
+import { ChannelId, QuestionAndResponse, UserId } from "./src/types";
 import {
   clear,
   push,
@@ -20,42 +20,22 @@ const openai = new OpenAIApi(configuration);
 
 const MODEL_NAME: string = process.env.MODEL_NAME || "gpt-3.5-turbo";
 
-const instructionTexts: string[] = [
-  "あなたはDiscordチャット内で応答する、フレンドリーで優秀なアシスタントです。Unicode Emojiをたくさん使用して回答してください。句読点もなるべく多く使用してください。質問者の名前は、質問文のはじめに付与されています。例えば、Yamadaさんがあなたに質問するときは、「@Yamada スペースシャトルとは何でしょうか？」のような形式で質問が届きます。あなたは質問者の名前を添えて回答してください。",
-];
-const exampleConversations: string[][] = [
-  [
-    "@Yamada こんにちは。元気ですか？",
-    "Yamadaﾁｬﾝ！✋😁元気カナ？？？おじさんは最近腰がいたいョ。。。😅 Yamadaﾁｬﾝも、無理しないようにﾈ！👍何かできることあったら言ってﾈ！😊",
-  ],
-];
-const instructionMessages: ChatCompletionRequestMessage[] =
-  instructionTexts.map((content) => ({
-    role: "system",
-    content,
-  }));
-const exampleMessages: ChatCompletionRequestMessage[] =
-  exampleConversations.flatMap(([question, answer]) => {
-    return [
-      {
-        role: "user",
-        content: question,
-      },
-      {
-        role: "assistant",
-        content: answer,
-      },
-    ];
-  });
+const instructionText: string =
+  "あなたはDiscordチャット内で応答する、フレンドリーで優秀なアシスタントです。" +
+  "質問者の名前は、質問文のはじめに付与されています。例えば、Yamadaさんがあなに質問するときは、「Yamada スペースシャトルとは何でしょうか？」のような形式で質問が届きます。あなたは質問者の名前を添えて回答してください。" +
+  "また、句読点とUnicode Emojiをなるべく多く使用して回答してください。例えば、「Yamada こんにちは。元気ですか？」という質問が来たら、" +
+  "「Yamadaﾁｬﾝ！✋😁元気カナ？？？おじさんは、最近腰がいたいョ。。。😅 Yamadaﾁｬﾝも、無理しないようにﾈ！👍何かできることあったら言ってﾈ！😊」という様に答えてください。";
 
-// Discordクライアントが起動すると、一度だけ呼び出される関数を定義する
+const instructionMessage: ChatCompletionRequestMessage = {
+  role: "system",
+  content: instructionText,
+};
+
 client.once("ready", () => {
   console.log(`${client.user?.tag} Ready`);
 });
 
-// Discordクライアントが起動すると、一度だけ呼び出される関数を定義する
 client.on("ready", async () => {
-  // コマンドを定義する
   const chat = [
     {
       name: "gpt",
@@ -75,7 +55,6 @@ client.on("ready", async () => {
     },
   ];
 
-  // コマンドを登録する
   await client.application?.commands.set(chat);
 });
 
@@ -90,73 +69,89 @@ const historyToRequestMessages = (
     { role: "assistant", content: `${interaction.response}` },
   ]);
 
+const _execCompletion = async (props: {
+  channelId: ChannelId;
+  userId: UserId;
+  username: string;
+  question: string;
+}) => {
+  const { channelId, userId, username, question: questionRaw } = props;
+  const question = `${username} ${questionRaw}`;
+
+  const { history = [] } =
+    selectMessageHistoryByChannelId(store.getState(), channelId) || {};
+  console.log("current history:", history);
+
+  const historyMessages = historyToRequestMessages(history);
+  const contextMessages: ChatCompletionRequestMessage[] = [
+    ...historyMessages,
+    {
+      role: "user",
+      content: question,
+    },
+  ];
+  console.log("message to be completed:", contextMessages);
+  const completion = await openai.createChatCompletion({
+    model: MODEL_NAME,
+    messages: [instructionMessage, ...contextMessages],
+  });
+
+  const response = completion.data.choices[0].message?.content.trim() || "";
+
+  store.dispatch(
+    push({
+      channelId,
+      interaction: { user: userId, question, response },
+    })
+  );
+
+  return response;
+};
+
+const _onGptCommand = async (props: { interaction: CommandInteraction }) => {
+  const {
+    interaction: {
+      options,
+      channelId,
+      user: { id: userId, username },
+    },
+  } = props;
+  const { interaction } = props;
+
+  const question = `${options.get("質問")?.value}`;
+  console.log(`<${channelId}> ${userId}@${username}:${question}`); // 質問がコンソールに出力される
+
+  (async () => {
+    try {
+      const response = await _execCompletion({
+        channelId,
+        userId,
+        username,
+        question,
+      });
+      await interaction.editReply(
+        `> ${question}\n\n>> <@!${userId}> ${response}\r\n`
+      );
+    } catch (error: any) {
+      console.error(error);
+      await interaction.editReply(`エラーが発生しました: ${error.message}`);
+    }
+  })();
+};
+
 client.on("interactionCreate", async (interaction) => {
-  // インタラクションがコマンドでなければ、何もしない
   if (!interaction.isCommand()) return;
 
-  // インタラクションがどのコマンドかを取得する
-  const {
-    commandName: command,
-    channelId,
-    user: { id: userId, username },
-  } = interaction;
+  const { commandName: command, channelId } = interaction;
 
-  // gptコマンドが呼び出された場合、OpenAIに質問を送信する
+  await interaction.deferReply();
+
   if (command === "gpt") {
-    // 質問を取得する
-    const questionRaw = interaction.options.get("質問")?.value;
-    const question = `@${username} ${questionRaw}`;
-    console.log(`<${channelId}> ${userId}@${username}:${question}`); // 質問がコンソールに出力される
-
-    // interactionの返信を遅延する
-    await interaction.deferReply();
-
-    const { history = [] } =
-      selectMessageHistoryByChannelId(store.getState(), channelId) || {};
-    console.log("current history:", history);
-
-    const historyMessages = historyToRequestMessages(history);
-    (async () => {
-      try {
-        const contextMessages: ChatCompletionRequestMessage[] = [
-          ...historyMessages,
-          {
-            role: "user",
-            content: question,
-          },
-        ];
-        console.log("message to be completed:", contextMessages);
-        const completion = await openai.createChatCompletion({
-          model: MODEL_NAME,
-          messages: [
-            ...instructionMessages,
-            ...exampleMessages,
-            ...contextMessages,
-          ],
-        });
-
-        const response =
-          completion.data.choices[0].message?.content.trim() || "";
-
-        store.dispatch(
-          push({
-            channelId,
-            interaction: { user: userId, question, response },
-          })
-        );
-        await interaction.editReply(
-          `> ${questionRaw}\n>> @${username} ${response}\r\n`
-        );
-      } catch (error: any) {
-        console.error(error);
-        await interaction.editReply(`エラーが発生しました: ${error.message}`);
-      }
-    })();
+    _onGptCommand({ interaction });
   } else if (command === "gpt-clear") {
     store.dispatch(clear({ channelId }));
-    await interaction.reply("---記憶リセット---");
+    await interaction.editReply("---記憶リセット---");
   }
 });
 
-//Discordクライアントにログイン
 client.login(process.env.DISCORD_BOT_TOKEN);
