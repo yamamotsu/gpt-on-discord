@@ -1,6 +1,6 @@
 import { Client, CommandInteraction } from "discord.js";
 import { ChatCompletionRequestMessage, Configuration, OpenAIApi } from "openai";
-// dotenvを使って、環境変数を読み込む
+
 import dotenv from "dotenv";
 dotenv.config();
 
@@ -134,7 +134,9 @@ const _onGptCommand = async (props: { interaction: CommandInteraction }) => {
       );
     } catch (error: any) {
       console.error(error);
-      await interaction.editReply(`エラーが発生しました: ${error.message}`);
+      await interaction.editReply(
+        `> ${question}\n\n>> エラーが発生しました: ${error.message}`
+      );
     }
   })();
 };
