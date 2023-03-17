@@ -5,8 +5,7 @@ import type { PayloadAction } from "@reduxjs/toolkit";
 
 import { ChannelId, QuestionAndResponse } from "../types";
 import { type RootState } from "./rootStore";
-
-const MAX_HISTORIES = parseInt(process.env.MAX_HISTORIES || "3");
+import { MAX_HISTORIES } from "../constants";
 
 interface MessageHistoryByChannel {
   channelId: ChannelId;
