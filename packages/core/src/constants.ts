@@ -1,8 +1,5 @@
 import { ChatCompletionRequestMessage } from "openai";
 
-import dotenv from "dotenv";
-dotenv.config();
-
 export const MODEL_NAME: string = process.env.MODEL_NAME || "gpt-3.5-turbo";
 export const MAX_HISTORIES: number = parseInt(process.env.MAX_HISTORIES || "3");
 

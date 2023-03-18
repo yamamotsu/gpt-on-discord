@@ -1,10 +1,13 @@
 import { Client, CommandInteraction, Interaction } from "discord.js";
 import { Configuration, OpenAIApi } from "openai";
 
+import dotenv from "dotenv";
+dotenv.config();
+
 import {
   execCompletion,
   dispatchClearInteractionHistory,
-} from "./src/execCompletion";
+} from "@yamamotsu/gpt-on-discord-core";
 
 const client = new Client({ intents: ["GuildMessages"] });
 const configuration = new Configuration({
