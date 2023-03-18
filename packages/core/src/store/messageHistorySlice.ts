@@ -3,21 +3,20 @@ const { createSlice } = ((toolkitRaw as any).default ??
   toolkitRaw) as typeof toolkitRaw;
 import type { PayloadAction } from "@reduxjs/toolkit";
 
-import { ChannelId, QuestionAndResponse } from "../types";
+import { HistoryKey, QuestionAndResponse } from "../types";
 import { type RootState } from "./rootStore";
-import { MAX_HISTORIES } from "../constants";
 
 interface MessageHistoryByChannel {
-  channelId: ChannelId;
+  historyKey: HistoryKey;
   history: QuestionAndResponse[];
 }
 interface MessageHistoryStore {
-  [key: ChannelId]: MessageHistoryByChannel;
+  [key: HistoryKey]: MessageHistoryByChannel;
 }
 const initialState: MessageHistoryStore = {};
 
 interface MessageHistoryPayload {
-  channelId: ChannelId;
+  historyKey: HistoryKey;
   interaction?: QuestionAndResponse;
 }
 export const messageHistorySlice = createSlice({
@@ -25,37 +24,34 @@ export const messageHistorySlice = createSlice({
   initialState,
   reducers: {
     push: (state, action: PayloadAction<MessageHistoryPayload>) => {
-      const { channelId, interaction } = action.payload;
+      const { historyKey, interaction } = action.payload;
       if (!interaction) {
         return;
       }
 
-      const history = state[channelId]?.history || [];
-      if (history.length >= MAX_HISTORIES) {
-        history.shift();
-      }
+      const history = state[historyKey]?.history || [];
       history.push({ ...interaction });
-      state[channelId] = {
-        channelId,
+      state[historyKey] = {
+        historyKey,
         history,
       };
-      console.log("state updated:", state[channelId]);
+      console.log("state updated:", state[historyKey]);
     },
     clear: (state, action: PayloadAction<MessageHistoryPayload>) => {
-      const { channelId } = action.payload;
-      state[channelId] = {
-        channelId,
+      const { historyKey } = action.payload;
+      state[historyKey] = {
+        historyKey,
         history: [],
       };
-      console.log("state cleared:", state[channelId]);
+      console.log("state cleared:", state[historyKey]);
     },
   },
 });
 
 export const { push, clear } = messageHistorySlice.actions;
-export const selectMessageHistoryByChannelId = (
+export const selectMessageHistory = (
   state: RootState,
-  channelId: ChannelId
-): MessageHistoryByChannel | undefined => state.messageHistory[channelId];
+  historyKey: HistoryKey
+): MessageHistoryByChannel | undefined => state.messageHistory[historyKey];
 
 export const messageHistoryReducer = messageHistorySlice.reducer;

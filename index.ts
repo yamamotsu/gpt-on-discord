@@ -4,16 +4,18 @@ import { Configuration, OpenAIApi } from "openai";
 import dotenv from "dotenv";
 dotenv.config();
 
-import {
-  execCompletion,
-  dispatchClearInteractionHistory,
+import GptManager, {
+  clearInteractionHistory,
 } from "@yamamotsu/gpt-on-discord-core";
 
+const INSTRUCTION_TEXT: string =
+  "あなたはDiscordチャット内で応答する、フレンドリーで優秀なアシスタントです。句読点とUnicode Emojiをなるべく多く使用して回答してください。" +
+  "質問者の名前は、質問文のはじめに付与されています。例えば、Yamadaさんがあなに質問するときは、「Yamadaさんからの質問: スペースシャトルとは何でしょうか？」のような形式で質問が届きます。あなたは質問者の名前を添えて回答してください。" +
+  "例えば、「Yamadaさんからの質問: こんにちは。元気ですか？」という質問が来たら、次のように答えましょう:「Yamadaﾁｬﾝ！✋😁元気カナ？？？おじさんは、最近腰がいたいョ。。。😅 Yamadaﾁｬﾝも、無理しないようにﾈ！👍何かできることあったら言ってﾈ！😊」";
+
 const client = new Client({ intents: ["GuildMessages"] });
-const configuration = new Configuration({
-  apiKey: process.env.OPENAI_API_KEY,
-});
-const openai = new OpenAIApi(configuration);
+const gpt = new GptManager();
+gpt.setInstructionText(INSTRUCTION_TEXT);
 
 const onGptCommandReceived = async (props: {
   interaction: CommandInteraction;
@@ -32,12 +34,11 @@ const onGptCommandReceived = async (props: {
 
   (async () => {
     try {
-      const response = await execCompletion({
-        openai,
-        channelId,
+      const questionWithUsername = `${username} ${question}`;
+      const response = await gpt.execChatCompletion({
+        historyKey: channelId,
         userId,
-        username,
-        question,
+        question: questionWithUsername,
       });
       await interaction.editReply(
         `> ${question}\n\n>> <@!${userId}> ${response}\r\n`
@@ -61,7 +62,7 @@ const _onInteractionCreate = async (interaction: Interaction) => {
   if (command === "gpt") {
     onGptCommandReceived({ interaction });
   } else if (command === "gpt-clear") {
-    dispatchClearInteractionHistory(channelId);
+    clearInteractionHistory(channelId);
     await interaction.editReply("---記憶リセット---");
   }
 };

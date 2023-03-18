@@ -1,10 +1,7 @@
-export {
-  store,
-  push,
-  clear,
-  selectMessageHistoryByChannelId,
-} from "./src/store";
+import GptManager from "./src/gptManager";
 
-export * from "./src/constants";
-export * from "./src/execCompletion";
+export { store, push, clear, selectMessageHistory } from "./src/store";
+
+export * from "./src/historyHelper";
 export * from "./src/types";
+export default GptManager;

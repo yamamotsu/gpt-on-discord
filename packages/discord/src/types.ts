@@ -4,4 +4,5 @@ export type {
   APIApplicationCommandInteraction,
   APIInteraction,
   Locale,
+  ApplicationCommandData,
 } from "discord.js";

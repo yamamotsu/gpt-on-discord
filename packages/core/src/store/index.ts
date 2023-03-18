@@ -1,6 +1,2 @@
 export { store } from "./rootStore";
-export {
-  push,
-  clear,
-  selectMessageHistoryByChannelId,
-} from "./messageHistorySlice";
+export { push, clear, selectMessageHistory } from "./messageHistorySlice";
