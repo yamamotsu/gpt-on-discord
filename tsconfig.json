@@ -1,11 +1,11 @@
 {
-    "compilerOptions": {
-        "module": "ESNext",
-        "moduleResolution": "node",
-        "esModuleInterop": true,
-        "strict": true,
-    },
-    "ts-node": {
-        "experimentalSpecifierResolution": "node"
-    }
+  "compilerOptions": {
+    "module": "ESNext",
+    "moduleResolution": "node",
+    "esModuleInterop": true,
+    "strict": true,
+  },
+  "ts-node": {
+    "experimentalSpecifierResolution": "node"
+  }
 }
