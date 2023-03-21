@@ -1,5 +1,9 @@
 import { ChatCompletionRequestMessage, Configuration, OpenAIApi } from "openai";
-import { pushInteractionHistory, getMessageHistory } from "./historyHelper";
+import {
+  pushInteractionHistory,
+  getMessageHistory,
+  clearInteractionHistory,
+} from "./historyHelper";
 import { OPENAI_MODEL_NAME } from "./types";
 
 export interface GptManagerInitParams {
@@ -75,5 +79,9 @@ export default class GptManager {
       response,
     });
     return response;
+  }
+
+  clearHistory(historyKey: string) {
+    clearInteractionHistory(historyKey);
   }
 }

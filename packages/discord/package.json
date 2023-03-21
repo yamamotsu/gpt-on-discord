@@ -2,8 +2,8 @@
   "name": "@yamamotsu/discord-api-helper",
   "version": "1.0.0",
   "description": "discord api helper",
-  "type": "module",
-  "main": "index.ts",
+  "type": "commonjs",
+  "main": "./dist/index.js",
   "author": "yamamotsu",
   "license": "MIT",
   "scripts": {
@@ -11,6 +11,7 @@
     "type-check": "tsc --noEmit"
   },
   "dependencies": {
+    "tweetnacl": "^1.0.3"
   },
   "devDependencies": {
     "discord.js": "^14.8.0",
