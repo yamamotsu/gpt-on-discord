@@ -1,21 +1,40 @@
-import { Client, CommandInteraction, Interaction } from "discord.js";
-import { Configuration, OpenAIApi } from "openai";
+import {
+  ApplicationCommandData,
+  Client,
+  CommandInteraction,
+  Interaction,
+} from "discord.js";
+import fs from "fs";
 
 import dotenv from "dotenv";
 dotenv.config();
 
-import GptManager, {
-  clearInteractionHistory,
-} from "@yamamotsu/gpt-on-discord-core";
+import GptManager, { clearInteractionHistory } from "@yamamotsu/gpt-manager";
 
-const INSTRUCTION_TEXT: string =
-  "あなたはDiscordチャット内で応答する、フレンドリーで優秀なアシスタントです。句読点とUnicode Emojiをなるべく多く使用して回答してください。" +
-  "質問者の名前は、質問文のはじめに付与されています。例えば、Yamadaさんがあなに質問するときは、「Yamadaさんからの質問: スペースシャトルとは何でしょうか？」のような形式で質問が届きます。あなたは質問者の名前を添えて回答してください。" +
-  "例えば、「Yamadaさんからの質問: こんにちは。元気ですか？」という質問が来たら、次のように答えましょう:「Yamadaﾁｬﾝ！✋😁元気カナ？？？おじさんは、最近腰がいたいョ。。。😅 Yamadaﾁｬﾝも、無理しないようにﾈ！👍何かできることあったら言ってﾈ！😊」";
+interface AppConfig {
+  chatgpt: {
+    instruction: {
+      default: string;
+    };
+    context?: {
+      maxHistories?: number;
+    };
+  };
+  commands: ApplicationCommandData[];
+}
+const config: AppConfig = JSON.parse(fs.readFileSync("./config.json", "utf-8"));
+const {
+  commands,
+  chatgpt: {
+    context: { maxHistories } = {},
+    instruction: { default: INSTRUCTION_DEFAULT },
+  },
+} = config;
+console.log("commands:", commands);
 
 const client = new Client({ intents: ["GuildMessages"] });
-const gpt = new GptManager();
-gpt.setInstructionText(INSTRUCTION_TEXT);
+const gpt = new GptManager({ maxHistories });
+gpt.setInstructionText(INSTRUCTION_DEFAULT);
 
 const onGptCommandReceived = async (props: {
   interaction: CommandInteraction;
@@ -72,26 +91,7 @@ client.once("ready", () => {
 });
 
 client.on("ready", async () => {
-  const chat = [
-    {
-      name: "gpt",
-      description: "質問したら答えが返ってきます",
-      options: [
-        {
-          type: 3,
-          name: "質問",
-          description: "質問したい文を入れてください",
-          required: true,
-        },
-      ],
-    },
-    {
-      name: "gpt-clear",
-      description: "コンテキストを削除します",
-    },
-  ];
-
-  await client.application?.commands.set(chat);
+  await client.application?.commands.set(commands);
 });
 
 client.on("interactionCreate", _onInteractionCreate);

@@ -1,5 +1,5 @@
 {
-  "name": "@yamamotsu/gpt-on-discord-core",
+  "name": "@yamamotsu/gpt-manager",
   "version": "1.0.0",
   "description": "ChatGPT on your discord server",
   "type": "commonjs",

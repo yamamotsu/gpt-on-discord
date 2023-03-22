@@ -1,6 +1,5 @@
-import type { APIGatewayEvent, AppSyncResolverEvent } from "aws-lambda";
 import { Application } from "@yamamotsu/discord-api-helper";
-import GptManager from "@yamamotsu/gpt-on-discord-core";
+import GptManager from "@yamamotsu/gpt-manager";
 import { APIApplicationCommandInteractionDataStringOption } from "discord.js";
 import { CommandInteraction } from "@yamamotsu/discord-api-helper/src/application";
 
