@@ -3,6 +3,26 @@
 Simple discord bot that uses OpenAI's GPT-3 API to generate natural language responses to user input.
 Created for my practice of Discord Bot / ChatGPT.
 
+## Features
+
+### Daemon bot
+
+You can run `yarn gpt-on-discord` on your local PC or remote instance, to start the bot daemon that handles `/gpt` command.
+This is the simple way to run the bot (and stable), but the bot should always be started whenever you want to use `/gpt`.
+
+### Lambda function bot (Unstable)
+
+As the another option to the daemon bot, you can run this bot on your AWS environment, as two AWS lambda functions:
+
+- the "main" function to handle chatgpt request/response
+- the "gateway" function to handle defer reply and async call of "main" function
+
+Lambda function bot releases you from consistently launching the bot process on your local PC.
+
+But this feature is currently in progress so there are some problems(i.e. Bot timeouts due to slow startup during cold boot).
+
+> Setup instructions for lambda function is currently not ready
+
 ## Getting Started
 
 Before starting your bot, you need to get OpenAI API key and Discord Bot token.
@@ -35,9 +55,22 @@ Copy `.env.sample` to `.env` and modify it for your environment.
 
 ```.env
 # Set env variables and rename me with '.env'
+# OpenAI API
 OPENAI_API_KEY=[YOUR_OPENAI_API_KEY]
+
+# Discord bot
 DISCORD_BOT_TOKEN=[YOUR_DISCORD_BOT_TOKEN]
+PUBLIC_KEY=[YOUR_PUBLIC_KEY]
+APPLICATION_ID=[YOUR_APPLICATION_ID]
+DISCORD_API_VERSION=10
+
+# Application settings
+MODEL_NAME=gpt-3.5-turbo
 MAX_HISTORIES=10
+
+# Lambda function
+LAMBDA_FUNCTION_NAME=chatgpt
+
 ```
 
 run `yarn install` to install dependencies.
@@ -48,7 +81,7 @@ yarn install
 
 ### Start your bot and add it to your server
 
-Start your bot by `yarn start`
+Start your bot daemon by `yarn start`
 
 ```sh
 yarn start
@@ -93,11 +126,11 @@ making it one of the best-selling video games of all time. 😲🎮
 ### Notes
 
 - Message context (a history of conversation) is saved per channel. As default, last 10 conversation will be saved as context.
-This number can be changed by `MAX_HISTORIES` environment variable (it's defined in `.env` file).
-- In the beginning of the question ChatGPT reads, the questioner's username will be attached in format of "[*username*]"
-- You can modify instruction text for ChatGPT by `instructionTexts` variable in `index.ts`.
+This number can be changed from `MAX_HISTORIES` environment variable (it's defined in `.env` file) , or `chatgpt.context.maxHistories` in `config.json` file. If both is specified `config.json`'s value will be used.
+- In the beginning of the question ChatGPT reads, the questioner's username will be attached in format of `"*username*さんからの質問:"` (EN: `Question from *username*:` )
+- You can modify instruction text for ChatGPT by `chatgpt.instruction.default` property in `config.json`.
   - As default, the following instructions are given to bot.
-  > Please reply in a friendly and proficient manner using Unicode emojis in Discord chat, and use as many punctuation marks as possible.
+  > EN: Please reply in a friendly and proficient manner using Unicode emojis in Discord chat, and use as many punctuation marks as possible.
   > The name of the questioner is attached to the beginning of the question. Please include the questioner's name at the beginning of your response.
 
 ## Acknowledgements

@@ -2,8 +2,6 @@
   "name": "@yamamotsu/gpt-on-discord",
   "version": "1.0.0",
   "description": "ChatGPT on your discord server",
-  "type": "module",
-  "main": "index.ts",
   "author": "yamamotsu",
   "license": "MIT",
   "private": true,
@@ -12,8 +10,8 @@
     "packages/*"
   ],
   "scripts": {
-    "start": "ts-node-esm index.ts",
-    "register": "ts-node-esm registerCommand.ts",
+    "start": "yarn gpt-on-discord",
+    "register": "yarn register-slash-commands",
     "build:discord": "yarn workspace @yamamotsu/discord-api-helper build",
     "build:core": "yarn workspace @yamamotsu/gpt-manager build",
     "build:layer": "yarn workspace @yamamotsu/gpt-on-discord-layer build",
@@ -29,10 +27,8 @@
     "clean": "rm -rf node_modules"
   },
   "dependencies": {
-    "@yamamotsu/gpt-manager": "^1.0.0",
-    "@yamamotsu/discord-api-helper": "^1.0.0",
-    "discord.js": "^14.7.1",
-    "openai": "^3.2.1"
+    "@yamamotsu/gpt-on-discord-bot": "^1.0.0",
+    "@yamamotsu/gpt-on-discord-register": "^1.0.0"
   },
   "devDependencies": {
     "@types/node": "^18.14.6",
