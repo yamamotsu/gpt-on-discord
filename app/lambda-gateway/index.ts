@@ -5,6 +5,13 @@ import { Application } from "@yamamotsu/discord-api-helper";
 const app = new Application();
 const lambda = new aws.Lambda();
 
+const MAIN_FUNCTION_NAME = process.env.LAMBDA_FUNCTION_NAME;
+if (!MAIN_FUNCTION_NAME) {
+  throw new Error(
+    "`LAMBDA_FUNCTION_NAME` is not specified in environment variable."
+  );
+}
+
 const createResponse = (data: any) => ({
   statusCode: 200,
   headers: {
@@ -58,7 +65,11 @@ export const handler = async (
 
   if (body.type === 2) {
     console.log("incoming command: ", body.data);
-    await invoke({ functionName: "ChatGPT_v18", body: event, async: true });
+    await invoke({
+      functionName: MAIN_FUNCTION_NAME,
+      body: event,
+      async: true,
+    });
     return deferReply();
   }
   return {

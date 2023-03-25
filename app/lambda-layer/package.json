@@ -1,0 +1,16 @@
+{
+  "name": "@yamamotsu/gpt-on-discord-layer",
+  "version": "1.0.0",
+  "description": "Dependencies definition for AWS Lambda Layer",
+  "author": "yamamotsu",
+  "license": "MIT",
+  "private": true,
+  "scripts": {
+    "build": "yarn install --prod --modules-folder ../../dist/layer/nodejs/node_modules"
+  },
+  "dependencies": {
+    "@yamamotsu/discord-api-helper": "^1.0.0",
+    "@yamamotsu/gpt-manager": "^1.0.0",
+    "aws-sdk": "^2.1339.0"
+  }
+}

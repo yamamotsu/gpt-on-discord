@@ -7,7 +7,6 @@
   "author": "yamamotsu",
   "license": "MIT",
   "scripts": {
-    "install:prod": "yarn install --production --modules-folder ./layer/nodejs/node_modules",
     "build": "tsc --outDir ./",
     "type-check": "tsc --noEmit"
   },

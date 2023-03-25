@@ -14,22 +14,28 @@
   "scripts": {
     "start": "ts-node-esm index.ts",
     "register": "ts-node-esm registerCommand.ts",
-    "isolate:lambda": "isolate-workspace -w @yamamotsu/gpt-on-discord-lambda -o ./dist/lambda/",
-    "build:lambda": "yarn build:core && yarn build:discord && yarn isolate:lambda && cd ./dist/lambda/ && yarn install:prod && yarn build",
-    "isolate:gateway": "isolate-workspace -w @yamamotsu/gpt-on-discord-lambda-gateway -o ./dist/gateway/",
-    "build:gateway": "yarn build:discord && yarn isolate:gateway && cd ./dist/gateway/ && yarn install:prod && yarn build",
     "build:discord": "yarn workspace @yamamotsu/discord-api-helper build",
     "build:core": "yarn workspace @yamamotsu/gpt-manager build",
-    "build:clean": "rm -rf dist"
+    "build:layer": "yarn workspace @yamamotsu/gpt-on-discord-layer build",
+    "isolate:lambda": "isolate-workspace -w @yamamotsu/gpt-on-discord-lambda -o ./dist/lambda",
+    "build:lambda": "yarn build:core && yarn build:discord && yarn isolate:lambda && cp ./config.json ./dist/lambda/ && cd ./dist/lambda && yarn build",
+    "isolate:gateway": "isolate-workspace -w @yamamotsu/gpt-on-discord-lambda-gateway -o ./dist/gateway/",
+    "build:gateway": "yarn build:discord && yarn isolate:gateway && cd ./dist/gateway/ && yarn build",
+    "build": "yarn build:layer && yarn build:lambda && yarn build:gateway",
+    "build:clean": "rm -rf dist",
+    "deploy:lambda": "yarn build && bash scripts/deploy.sh all",
+    "deploy:lambda:main": "yarn build:lambda && bash scripts/deploy.sh main",
+    "deploy:lambda:gateway": "yarn build:gateway && bash scripts/deploy.sh gateway",
+    "clean": "rm -rf node_modules"
   },
   "dependencies": {
+    "@yamamotsu/gpt-manager": "^1.0.0",
     "@yamamotsu/discord-api-helper": "^1.0.0",
     "discord.js": "^14.7.1",
     "openai": "^3.2.1"
   },
   "devDependencies": {
     "@types/node": "^18.14.6",
-    "@yamamotsu/gpt-manager": "^1.0.0",
     "@yamamotsu/gpt-on-discord-lambda": "^1.0.0",
     "@yamamotsu/gpt-on-discord-lambda-gateway": "^1.0.0",
     "prettier": "^2.8.4",
