@@ -83,5 +83,17 @@ export const handler = async (event: any): Promise<void> => {
     }
   }
 
-  await interaction.editReply(response);
+  const STEP = 2000;
+  await interaction.editReply({
+    content: response.slice(0, STEP),
+  });
+
+  let i = STEP;
+  while (i < response.length) {
+    const content = response.slice(i, i + STEP);
+    await interaction.createFollowupMessage({
+      content,
+    });
+    i += STEP;
+  }
 };

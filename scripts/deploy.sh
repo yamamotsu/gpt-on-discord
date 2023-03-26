@@ -18,7 +18,7 @@ fi
 
 if [ $1 = main -o $1 = all ]; then
     aws lambda update-function-configuration --function-name $LAMBDA_FUNCTION_NAME\
-        --timeout 20\
+        --timeout 120\
         --runtime "nodejs18.x"\
         --environment "Variables={APPLICATION_ID=$APPLICATION_ID,DISCORD_BOT_PUBLIC_KEY=$PUBLIC_KEY,DISCORD_API_VERSION=$DISCORD_API_VERSION,MAX_HISTORIES=$MAX_HISTORIES,MODEL_NAME=$MODEL_NAME,OPENAI_API_KEY=$OPENAI_API_KEY}"
 

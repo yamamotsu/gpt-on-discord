@@ -13,6 +13,14 @@ import {
   APIChatInputApplicationCommandInteraction,
   ApplicationCommandData,
 } from "./types";
+import {
+  createInteractionResponse,
+  deferReply,
+  editOriginalInteractionResponse,
+  createFollowupMessage,
+  FollowupMessageBody,
+  EditWebhookMessageRequestBody,
+} from "./services";
 
 export interface ApplicationInitialParams {
   apiVersion?: number;
@@ -70,54 +78,31 @@ export class CommandInteraction {
     this.command = new CommandData(app, interaction.data);
   }
 
-  private async _reply(json: APIInteractionResponse) {
-    const url =
-      this.app.baseUrl +
-      `/interactions/${this.interaction.id}/${this.interaction.token}/callback`;
-
-    console.log("replying:", url, json);
-    await fetch(url, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(json),
-    });
-  }
-
   async deferReply() {
-    await this._reply({
-      type: 5,
-    });
+    deferReply({ interaction: this });
   }
 
-  async editReply(message: string) {
-    const url =
-      this.app.baseUrl +
-      `/webhooks/${this.app.applicationId}/${this.interaction.token}/messages/@original`;
-
-    console.log("replying:", url, message);
-    const res = await fetch(url, {
-      method: "PATCH",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        content: message,
-      }),
+  async editReply(json: EditWebhookMessageRequestBody) {
+    const res = await editOriginalInteractionResponse({
+      interaction: this,
+      json,
     });
     const responseJson = await res.json();
     console.log(`> response: ${res.status} ${res.statusText} ${responseJson}`);
   }
 
-  async reply(message: string) {
-    const json: APIInteractionResponseChannelMessageWithSource = {
-      type: 4,
-      data: {
-        content: message,
-      },
-    };
-    await this._reply(json);
+  async reply(json: APIInteractionResponseChannelMessageWithSource) {
+    return createInteractionResponse({
+      interaction: this,
+      json,
+    });
+  }
+
+  async createFollowupMessage(json: FollowupMessageBody) {
+    return createFollowupMessage({
+      interaction: this,
+      json,
+    });
   }
 }
 
