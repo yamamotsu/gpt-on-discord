@@ -1,11 +1,13 @@
 import {
   APIApplicationCommandInteractionDataOption,
   APIChatInputApplicationCommandInteractionData,
-  APIInteractionResponse,
   APIInteractionResponseChannelMessageWithSource,
   APIInteractionGuildMember,
   ApplicationCommandType,
   InteractionType,
+  APIInteraction,
+  APIMessageComponentInteraction,
+  APIMessageComponentInteractionData,
 } from "discord.js";
 import nacl from "tweetnacl";
 import { DISCORD_API_BASEURL } from "./constants";
@@ -53,20 +55,16 @@ export class CommandData
   }
 }
 
-export class CommandInteraction {
+export class InteractionBase {
   readonly app: Application;
-  readonly interaction: APIChatInputApplicationCommandInteraction;
+  readonly interaction: APIInteraction;
   readonly type: InteractionType;
-  readonly command: CommandData;
-  readonly channelId: string;
+  readonly channelId?: string;
   readonly applicationId: string;
   readonly token: string;
   readonly member?: APIInteractionGuildMember;
 
-  constructor(
-    app: Application,
-    interaction: APIChatInputApplicationCommandInteraction
-  ) {
+  constructor(app: Application, interaction: APIInteraction) {
     this.app = app;
     this.interaction = interaction;
     this.channelId = interaction.channel_id;
@@ -74,8 +72,6 @@ export class CommandInteraction {
     this.type = interaction.type;
     this.token = interaction.token;
     this.member = interaction.member;
-
-    this.command = new CommandData(app, interaction.data);
   }
 
   async deferReply() {
@@ -103,6 +99,32 @@ export class CommandInteraction {
       interaction: this,
       json,
     });
+  }
+}
+
+export class CommandInteraction extends InteractionBase {
+  readonly command: CommandData;
+  readonly channelId: string;
+
+  constructor(
+    app: Application,
+    interaction: APIChatInputApplicationCommandInteraction
+  ) {
+    super(app, interaction);
+    this.channelId = interaction.channel_id;
+
+    this.command = new CommandData(app, interaction.data);
+  }
+}
+
+export class MessageComponentInteraction extends InteractionBase {
+  readonly data: APIMessageComponentInteractionData;
+  readonly channelId: string;
+
+  constructor(app: Application, interaction: APIMessageComponentInteraction) {
+    super(app, interaction);
+    this.data = interaction.data;
+    this.channelId = interaction.channel_id;
   }
 }
 
@@ -187,7 +209,21 @@ export class Application {
     );
   }
 
-  createInteraction(json: APIChatInputApplicationCommandInteraction) {
-    return new CommandInteraction(this, json);
+  createInteraction(
+    json: APIInteraction
+  ): InteractionBase | CommandInteraction | MessageComponentInteraction {
+    if (json.type === 2) {
+      return new CommandInteraction(
+        this,
+        json as APIChatInputApplicationCommandInteraction
+      );
+    } else if (json.type === 3) {
+      return new MessageComponentInteraction(
+        this,
+        json as APIMessageComponentInteraction
+      );
+    }
+    //TODO: impl. for autocomplete command and modal submit command;
+    return new InteractionBase(this, json);
   }
 }

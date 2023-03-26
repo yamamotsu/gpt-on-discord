@@ -7,10 +7,10 @@ import {
   Snowflake,
 } from "discord.js";
 import { URLSearchParams } from "url";
-import type { CommandInteraction } from "./application";
+import type { InteractionBase } from "./application";
 
 export interface InteractionParams<QueryParamsType = any, BodyType = any> {
-  interaction: CommandInteraction;
+  interaction: InteractionBase;
   queryParams?: QueryParamsType;
   json?: BodyType;
 }

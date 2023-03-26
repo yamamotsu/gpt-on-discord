@@ -63,17 +63,11 @@ export const handler = async (
     };
   }
 
-  if (body.type === 2) {
-    console.log("incoming command: ", body.data);
-    await invoke({
-      functionName: MAIN_FUNCTION_NAME,
-      body: event,
-      async: true,
-    });
-    return deferReply();
-  }
-  return {
-    statusCode: 404,
-    body: "Command not found",
-  };
+  console.log("incoming command: ", body.data);
+  await invoke({
+    functionName: MAIN_FUNCTION_NAME,
+    body: event,
+    async: true,
+  });
+  return deferReply();
 };
